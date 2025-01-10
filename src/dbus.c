@@ -501,6 +501,29 @@ static bool cdbus_append_wids(DBusMessage *msg, session_t *ps) {
 	return true;
 }
 
+/// Refresh specific window shadow
+/// TODO: implement custom dbus to change specific shadow
+static bool shadow_refresh(struct win *w) {
+	if (w == NULL) {
+		return false;
+	}
+	win_set_flags(w, WIN_FLAGS_FACTOR_CHANGED);
+	return true;
+}
+/// Refresh all window shadows
+static bool shadows_refresh(session_t *ps) {
+	wm_stack_foreach(ps->wm, cursor) {
+		if (wm_ref_is_zombie(cursor)) {
+			continue;
+		}
+		auto w = wm_ref_deref(cursor);
+		if (!shadow_refresh(w)) {
+			continue;
+		}
+	}
+	return true;
+}
+
 /**
  * Get n-th argument of a D-Bus message.
  *
@@ -990,15 +1013,15 @@ cdbus_process_opts_set(session_t *ps, DBusMessage *msg, DBusMessage *reply, DBus
 		return DBUS_HANDLER_RESULT_HANDLED;
 	}
 
-#define get_msg_arg(type, val)                                                           \
-	if (!cdbus_msg_get_arg(msg, 1, DBUS_TYPE_##type, &(val))) {                      \
+#define get_msg_arg(type, val, pos)                                                      \
+	if (!cdbus_msg_get_arg(msg, pos, DBUS_TYPE_##type, &(val))) {                    \
 		dbus_set_error_const(err, DBUS_ERROR_INVALID_ARGS, NULL);                \
 		return DBUS_HANDLER_RESULT_HANDLED;                                      \
 	};
 #define opts_set_do(tgt, dbus_type, type, expr)                                          \
 	if (strcmp(#tgt, target) == 0) {                                                 \
 		type val;                                                                \
-		get_msg_arg(dbus_type, val);                                             \
+		get_msg_arg(dbus_type, val, 1);                                          \
 		ps->o.tgt = expr;                                                        \
 		goto cdbus_process_opts_set_success;                                     \
 	}
@@ -1013,9 +1036,24 @@ cdbus_process_opts_set(session_t *ps, DBusMessage *msg, DBusMessage *reply, DBus
 	opts_set_do(no_fading_openclose, BOOLEAN, bool, val);
 	opts_set_do(stoppaint_force, UINT32, cdbus_enum_t, val);
 
+	if (!strcmp("shadow_color", target)) {
+		struct color shadow_color;
+
+		get_msg_arg(DOUBLE, shadow_color.red, 1);
+		get_msg_arg(DOUBLE, shadow_color.green, 2);
+		get_msg_arg(DOUBLE, shadow_color.blue, 3);
+
+		ps->o.shadow_color = shadow_color;
+
+		shadows_refresh(ps);
+		ps->pending_updates = true;
+
+		goto cdbus_process_opts_set_success;
+	}
+
 	if (strcmp("unredir_if_possible", target) == 0) {
 		dbus_bool_t val = FALSE;
-		get_msg_arg(BOOLEAN, val);
+		get_msg_arg(BOOLEAN, val, 1);
 		if (ps->o.unredir_if_possible != val) {
 			ps->o.unredir_if_possible = val;
 			queue_redraw(ps);
@@ -1025,7 +1063,7 @@ cdbus_process_opts_set(session_t *ps, DBusMessage *msg, DBusMessage *reply, DBus
 
 	if (strcmp("redirected_force", target) == 0) {
 		cdbus_enum_t val = UNSET;
-		get_msg_arg(UINT32, val);
+		get_msg_arg(UINT32, val, 1);
 		if (ps->o.redirected_force != val) {
 			ps->o.redirected_force = val;
 			force_repaint(ps);
