@@ -2190,6 +2190,7 @@ static session_t *session_init(int argc, char **argv, Display *dpy,
 	// Set up SIGUSR1 signal handler to reset program
 	ev_signal_init(&ps->usr1_signal, reset_enable, SIGUSR1);
 	ev_signal_init(&ps->int_signal, exit_enable, SIGINT);
+	ev_signal_init(&ps->int_signal, exit_enable, SIGTERM);
 	ev_signal_start(ps->loop, &ps->usr1_signal);
 	ev_signal_start(ps->loop, &ps->int_signal);
 
