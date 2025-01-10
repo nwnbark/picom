@@ -317,9 +317,9 @@ store_shadow_color(const struct picom_option * /*opt*/, const struct picom_arg *
 	struct options *opt = (struct options *)output;
 	struct color rgb;
 	rgb = hex_to_rgb(arg_str);
-	opt->shadow_red = rgb.red;
-	opt->shadow_green = rgb.green;
-	opt->shadow_blue = rgb.blue;
+	opt->shadow_color.red = rgb.red;
+	opt->shadow_color.green = rgb.green;
+	opt->shadow_color.blue = rgb.blue;
 	return true;
 }
 
@@ -464,9 +464,9 @@ static const struct picom_option picom_options[] = {
     ['O'] = {"fade-out-step"               , FLOAT(fade_out_step, 0, 1)                     , "Opacity change between steps while fading out. (default 0.03)"},
     ['D'] = {"fade-delta"                  , INTEGER(fade_delta, 1, INT_MAX)                , "The time between steps in a fade in milliseconds. (default 10)"},
     ['e'] = {"frame-opacity"               , FLOAT(frame_opacity, 0, 1)                     , "Opacity of window titlebars and borders. (0.0 - 1.0)"},
-    [257] = {"shadow-red"                  , FLOAT(shadow_red, 0, 1)                        , "Red color value of shadow (0.0 - 1.0, defaults to 0)."},
-    [258] = {"shadow-green"                , FLOAT(shadow_green, 0, 1)                      , "Green color value of shadow (0.0 - 1.0, defaults to 0)."},
-    [259] = {"shadow-blue"                 , FLOAT(shadow_blue, 0, 1)                       , "Blue color value of shadow (0.0 - 1.0, defaults to 0)."},
+    [257] = {"shadow-red"                  , FLOAT(shadow_color.red, 0, 1)                        , "Red color value of shadow (0.0 - 1.0, defaults to 0)."},
+    [258] = {"shadow-green"                , FLOAT(shadow_color.green, 0, 1)                      , "Green color value of shadow (0.0 - 1.0, defaults to 0)."},
+    [259] = {"shadow-blue"                 , FLOAT(shadow_color.blue, 0, 1)                       , "Blue color value of shadow (0.0 - 1.0, defaults to 0)."},
     [283] = {"blur-background"             , FIXED(blur_method, BLUR_METHOD_KERNEL)         , "Blur background of semi-transparent / ARGB windows. May impact performance"},
     [290] = {"backend"                     , DO(store_backend)                              , "Backend. Possible values are: " BACKENDS},
     [293] = {"benchmark"                   , INTEGER(benchmark, 0, INT_MAX)                 , "Benchmark mode. Repeatedly paint until reaching the specified cycles."},

@@ -935,9 +935,9 @@ cdbus_process_opts_get(session_t *ps, DBusMessage *msg, DBusMessage *reply, DBus
 	append_session_option(stoppaint_force, enum);
 	append_session_option(logpath, string);
 	append_session_option(vsync, boolean);
-	append_session_option(shadow_red, double);
-	append_session_option(shadow_green, double);
-	append_session_option(shadow_blue, double);
+	append_session_option(shadow_color.red, double);
+	append_session_option(shadow_color.green, double);
+	append_session_option(shadow_color.blue, double);
 	append_session_option(shadow_radius, int32);
 	append_session_option(shadow_offset_x, int32);
 	append_session_option(shadow_offset_y, int32);

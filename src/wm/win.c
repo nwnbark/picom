@@ -466,7 +466,8 @@ void win_process_secondary_flags(session_t *ps, struct win *w) {
 
 	auto new_options = win_options(w);
 
-	if (new_options.shadow != old_options.shadow && !new_options.shadow) {
+	if ((new_options.shadow != old_options.shadow && !new_options.shadow) ||
+	    (memcmp(&new_options.shadow_color, &old_options.shadow_color, sizeof(new_options.shadow_color)))) {
 		win_release_shadow(ps->backend_data, w);
 	}
 }
@@ -1060,6 +1061,9 @@ void win_on_factor_change(session_t *ps, struct win *w) {
 		    tri_from_bool(ps->o.wintype_option[window_type].full_shadow);
 	} else {
 		w->options = WIN_MAYBE_OPTIONS_DEFAULT;
+
+		w->options.shadow_color = ps->o.shadow_color;
+
 		assert(w->state == WSTATE_MAPPED);
 		if (inspect) {
 			printf("Checking " BOLD("window rules") ":\n");
@@ -1077,6 +1081,7 @@ void win_on_factor_change(session_t *ps, struct win *w) {
 			w->options.unredir = WINDOW_UNREDIR_FORCED;
 		}
 		w->opacity = win_options(w).opacity;
+
 	}
 
 	w->mode = win_calc_mode(w);

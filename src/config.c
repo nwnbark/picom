@@ -664,9 +664,9 @@ bool parse_config(options_t *opt, const char *config_file) {
 	    .use_damage = true,
 	    .frame_pacing = true,
 
-	    .shadow_red = 0.0,
-	    .shadow_green = 0.0,
-	    .shadow_blue = 0.0,
+	    .shadow_color.red = 0.0,
+	    .shadow_color.green = 0.0,
+	    .shadow_color.blue = 0.0,
 	    .shadow_radius = 18,
 	    .shadow_offset_x = -15,
 	    .shadow_offset_y = -15,

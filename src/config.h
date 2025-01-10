@@ -30,6 +30,7 @@ typedef struct session session_t;
 
 typedef struct win_option_mask {
 	bool shadow : 1;
+	bool shadow_color : 1;
 	bool fade : 1;
 	bool focus : 1;
 	bool blur_background : 1;
@@ -41,6 +42,7 @@ typedef struct win_option_mask {
 
 typedef struct win_option {
 	bool shadow;
+	char shadow_color;
 	bool fade;
 	bool focus;
 	bool blur_background;
@@ -173,6 +175,7 @@ struct window_maybe_options {
 	/// Window dim level, NaN means not set.
 	double dim;
 
+	struct color shadow_color;
 	/// The name of the custom fragment shader for this window. NULL means not set.
 	const char *shader;
 
@@ -203,6 +206,7 @@ struct window_maybe_options {
 struct window_options {
 	double opacity;
 	double dim;
+	struct color shadow_color;
 	const char *shader;
 	unsigned int corner_radius;
 	enum window_unredir_option unredir;
@@ -309,7 +313,7 @@ typedef struct options {
 
 	// === Shadow ===
 	/// Red, green and blue tone of the shadow.
-	double shadow_red, shadow_green, shadow_blue;
+	struct color shadow_color;
 	int shadow_radius;
 	int shadow_offset_x, shadow_offset_y;
 	double shadow_opacity;

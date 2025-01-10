@@ -37,7 +37,6 @@ struct renderer {
 	ivec2 canvas_size;
 	/// Format to use for back_image and intermediate images
 	enum backend_image_format format;
-	struct color shadow_color;
 	int shadow_radius;
 	void *shadow_blur_context;
 	struct conv *shadow_kernel;
@@ -118,7 +117,6 @@ renderer_init(struct renderer *renderer, struct backend_base *backend,
 			return false;
 		}
 		renderer->shadow_radius = (int)shadow_radius;
-		renderer->shadow_color = shadow_color;
 		renderer->shadow_pixel =
 		    solid_picture(backend->c, true, shadow_color.alpha, shadow_color.red,
 		                  shadow_color.green, shadow_color.blue);
@@ -212,15 +210,15 @@ err:
 
 image_handle
 renderer_shadow_from_mask(struct renderer *r, struct backend_base *backend,
-                          image_handle mask, unsigned int corner_radius, ivec2 mask_size) {
+                          image_handle mask, unsigned int corner_radius, ivec2 mask_size, struct color shadow_color) {
 	image_handle normalized_mask_image = NULL, shadow_image = NULL,
 	             shadow_color_pixel = NULL;
 	bool succeeded = false;
 	int radius = r->shadow_radius;
 
 	log_trace("Generating shadow from mask, mask %p, color (%f, %f, %f, %f)", mask,
-	          r->shadow_color.red, r->shadow_color.green, r->shadow_color.blue,
-	          r->shadow_color.alpha);
+	          shadow_color.red, shadow_color.green, shadow_color.blue,
+	          shadow_color.alpha);
 
 	// Apply the properties on the mask image and blit the result into a larger
 	// image, each side larger by `2 * radius` so there is space for blurring.
@@ -299,7 +297,7 @@ renderer_shadow_from_mask(struct renderer *r, struct backend_base *backend,
 	shadow_color_pixel =
 	    backend->ops.new_image(backend, BACKEND_IMAGE_FORMAT_PIXMAP, (ivec2){1, 1});
 	if (!shadow_color_pixel ||
-	    !backend->ops.clear(backend, shadow_color_pixel, r->shadow_color)) {
+	    !backend->ops.clear(backend, shadow_color_pixel, shadow_color)) {
 		log_error("Failed to create shadow color image");
 		goto out;
 	}
@@ -351,7 +349,7 @@ static bool
 renderer_bind_shadow(struct renderer *r, struct backend_base *backend, struct win *w) {
 	if (backend->ops.quirks(backend) & BACKEND_QUIRK_SLOW_BLUR) {
 		xcb_pixmap_t shadow = XCB_NONE;
-		if (!build_shadow(backend->c, r->shadow_color.alpha, w->widthb, w->heightb,
+		if (!build_shadow(backend->c, win_options(w).shadow_color.alpha, w->widthb, w->heightb,
 		                  (void *)r->shadow_kernel, r->shadow_pixel, &shadow)) {
 			return false;
 		}
@@ -366,7 +364,7 @@ renderer_bind_shadow(struct renderer *r, struct backend_base *backend, struct wi
 		}
 		w->shadow_image = renderer_shadow_from_mask(
 		    r, backend, w->mask_image, win_options(w).corner_radius,
-		    (ivec2){.width = w->widthb, .height = w->heightb});
+		    (ivec2){.width = w->widthb, .height = w->heightb}, win_options(w).shadow_color);
 	}
 	if (!w->shadow_image) {
 		log_error("Failed to create shadow");

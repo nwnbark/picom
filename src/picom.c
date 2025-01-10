@@ -580,9 +580,9 @@ static bool initialize_backend(session_t *ps) {
 	}
 	ps->renderer = renderer_new(ps->backend_data, ps->o.shadow_radius,
 	                            (struct color){.alpha = ps->o.shadow_opacity,
-	                                           .red = ps->o.shadow_red,
-	                                           .green = ps->o.shadow_green,
-	                                           .blue = ps->o.shadow_blue},
+						   .red = ps->o.shadow_color.red,
+						   .green = ps->o.shadow_color.green,
+						   .blue = ps->o.shadow_color.blue},
 	                            ps->o.dithered_present);
 	if (!ps->renderer) {
 		log_fatal("Failed to create renderer, aborting...");
@@ -1867,6 +1867,7 @@ static struct window_options win_options_from_config(const struct options *opts)
 	    .blur_background = opts->blur_method != BLUR_METHOD_NONE,
 	    .full_shadow = false,
 	    .shadow = opts->shadow_enable,
+	    .shadow_color = opts->shadow_color,
 	    .corner_radius = (unsigned)opts->corner_radius,
 	    .transparent_clipping = opts->transparent_clipping,
 	    .dim = 0,

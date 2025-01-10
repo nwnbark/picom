@@ -677,6 +677,13 @@ static c2_condition *parse_rule(struct list_node *rules, config_setting_t *setti
 	if (config_setting_lookup_float(setting, "opacity", &fval)) {
 		wopts->opacity = normalize_d(fval);
 	}
+	if (config_setting_lookup_string(setting, "shadow_color", &sval)) {
+		struct color rgb;
+		rgb = hex_to_rgb(sval);
+		wopts->shadow_color.red = rgb.red;
+		wopts->shadow_color.green = rgb.green;
+		wopts->shadow_color.blue = rgb.blue;
+	}
 	if (config_setting_lookup_float(setting, "dim", &fval)) {
 		wopts->dim = normalize_d(fval);
 	}
@@ -904,18 +911,18 @@ bool parse_config_libconfig(options_t *opt, const char *config_file) { /*NOLINT(
 	// --no-fading-destroyed-argb
 	lcfg_lookup_bool(&cfg, "no-fading-destroyed-argb", &opt->no_fading_destroyed_argb);
 	// --shadow-red
-	config_lookup_float(&cfg, "shadow-red", &opt->shadow_red);
+	config_lookup_float(&cfg, "shadow-red", &opt->shadow_color.red);
 	// --shadow-green
-	config_lookup_float(&cfg, "shadow-green", &opt->shadow_green);
+	config_lookup_float(&cfg, "shadow-green", &opt->shadow_color.green);
 	// --shadow-blue
-	config_lookup_float(&cfg, "shadow-blue", &opt->shadow_blue);
+	config_lookup_float(&cfg, "shadow-blue", &opt->shadow_color.blue);
 	// --shadow-color
 	if (config_lookup_string(&cfg, "shadow-color", &sval)) {
 		struct color rgb;
 		rgb = hex_to_rgb(sval);
-		opt->shadow_red = rgb.red;
-		opt->shadow_green = rgb.green;
-		opt->shadow_blue = rgb.blue;
+		opt->shadow_color.red = rgb.red;
+		opt->shadow_color.green = rgb.green;
+		opt->shadow_color.blue = rgb.blue;
 	}
 	// --shadow-exclude-reg
 	if (config_lookup_string(&cfg, "shadow-exclude-reg", &sval)) {
