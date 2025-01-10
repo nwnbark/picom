@@ -1168,6 +1168,7 @@ uint8_t session_redirection_mode(session_t *ps) {
 static bool redirect_start(session_t *ps) {
 	assert(!ps->redirected);
 	log_debug("Redirecting the screen.");
+	cdbus_ev_unredir(session_get_cdbus(ps), false);
 
 	// Map overlay window. Done firstly according to this:
 	// https://bugzilla.gnome.org/show_bug.cgi?id=597014
@@ -1252,6 +1253,7 @@ static bool redirect_start(session_t *ps) {
 static void unredirect(session_t *ps) {
 	assert(ps->redirected);
 	log_debug("Unredirecting the screen.");
+	cdbus_ev_unredir(session_get_cdbus(ps), true);
 
 	destroy_backend(ps);
 

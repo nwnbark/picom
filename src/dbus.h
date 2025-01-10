@@ -45,6 +45,9 @@ void cdbus_ev_win_focusout(struct cdbus_data *cd, struct win *w);
 /// Generate dbus win_focusin signal
 void cdbus_ev_win_focusin(struct cdbus_data *cd, struct win *w);
 
+/// Generate dbus unredir signal
+void cdbus_ev_unredir(struct cdbus_data *cd, bool state);
+
 #else
 
 static inline void
@@ -69,6 +72,10 @@ cdbus_ev_win_focusout(struct cdbus_data *cd attr_unused, struct win *w attr_unus
 
 static inline void
 cdbus_ev_win_focusin(struct cdbus_data *cd attr_unused, struct win *w attr_unused) {
+}
+
+static inline void
+cdbus_ev_unredir(struct cdbus_data *cd attr_unused, bool state attr_unused) {
 }
 
 #endif

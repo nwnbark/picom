@@ -949,6 +949,8 @@ cdbus_process_opts_get(session_t *ps, DBusMessage *msg, DBusMessage *reply, DBus
 	append(refresh_rate, int32, 0);
 	append(sw_opti, boolean, false);
 
+	append(unredirected, boolean, ps->redirected);
+
 	append_session_option(unredir_if_possible, boolean);
 	append_session_option(write_pid_path, string);
 	append_session_option(mark_wmwin_focused, boolean);
@@ -1121,6 +1123,9 @@ static DBusHandlerResult cdbus_process_introspect(DBusMessage *reply) {
 	    "    </signal>\n"
 	    "    <signal name='win_focusout'>\n"
 	    "      <arg name='wid' type='" CDBUS_TYPE_WINDOW_STR "'/>\n"
+	    "    </signal>\n"
+	    "    <signal name='unredir'>\n"
+	    "      <arg name='state' type='" DBUS_TYPE_BOOLEAN_AS_STRING "'/>\n"
 	    "    </signal>\n"
 	    "    <method name='reset' />\n"
 	    "    <method name='repaint' />\n"
@@ -1516,6 +1521,37 @@ static bool cdbus_signal_wid(struct cdbus_data *cd, const char *interface,
 	return true;
 }
 
+/**
+ * Send a signal with a bool as argument.
+ *
+ * @param ps current session
+ * @param name signal name
+ * @param bool true or false
+ */
+static bool cdbus_signal_state(struct cdbus_data *cd, const char *interface,
+                             const char *name, bool state) {
+	DBusMessage *msg = dbus_message_new_signal(CDBUS_OBJECT_NAME, interface, name);
+	if (!msg) {
+		log_error("Failed to create D-Bus signal.");
+		return false;
+	}
+
+	if (!cdbus_append_boolean(msg, state)) {
+		dbus_message_unref(msg);
+		return false;
+	}
+
+	if (!dbus_connection_send(cd->dbus_conn, msg, NULL)) {
+		log_error("Failed to send D-Bus signal.");
+		dbus_message_unref(msg);
+		return false;
+	}
+
+	dbus_connection_flush(cd->dbus_conn);
+	dbus_message_unref(msg);
+	return true;
+}
+
 /** @name Core callbacks
  */
 ///@{
@@ -1556,6 +1592,12 @@ void cdbus_ev_win_focusout(struct cdbus_data *cd, struct win *w) {
 void cdbus_ev_win_focusin(struct cdbus_data *cd, struct win *w) {
 	if (cd->dbus_conn) {
 		cdbus_signal_wid(cd, CDBUS_INTERFACE_NAME, "win_focusin", win_id(w));
+	}
+}
+
+void cdbus_ev_unredir(struct cdbus_data *cd, bool state) {
+	if (cd->dbus_conn) {
+		cdbus_signal_state(cd, CDBUS_INTERFACE_NAME, "unredir", state);
 	}
 }
 //!@}
